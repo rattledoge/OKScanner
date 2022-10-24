@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
 
@@ -6,18 +7,20 @@ import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
+import 'package:animated_bottom_navigation_bar/animated_bottom_navigation_bar.dart';
 
- void main() async {
-     WidgetsFlutterBinding.ensureInitialized();
-     Directory root = await getApplicationDocumentsDirectory(); // this is using path_provider
-     String directoryPath = root.path + '/onronronrr';
-     await Directory(directoryPath).create(recursive: true); // the error because of this line
-     String filePath = '$directoryPath/${DateTime.now()}.jpg';
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  Directory root =
+      await getApplicationDocumentsDirectory(); // this is using path_provider
+  String directoryPath = root.path + '/okscanner';
+  await Directory(directoryPath)
+      .create(recursive: true); // the error because of this line
+  String filePath = '$directoryPath/${DateTime.now()}.jpg';
 
-     print(filePath);
+  print(filePath);
 
   runApp(const MyApp());
-
 }
 
 class MyApp extends StatefulWidget {
@@ -35,7 +38,7 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       title: 'OK SCANNER',
       theme: ThemeData(
-        primarySwatch: Colors.orange,
+        primarySwatch: Colors.cyan,
       ),
       home: const MyHomePage(),
     );
@@ -53,6 +56,8 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   File? _image;
+  var _selectedIndex;
+  var _onItemTapped;
 
   Future getImage(ImageSource source) async {
     final image = await ImagePicker().pickImage(source: source);
@@ -60,53 +65,64 @@ class _MyHomePageState extends State<MyHomePage> {
 
     File? img = File(image.path);
     img = await _cropImage(imageFile: img);
-
+    final bytes = File(img!.path).readAsBytesSync();
+    String img64 = base64Encode(bytes);
+    print(img64);
     setState(() {
       _image = img;
     });
   }
 
-  Future<File> saveFilePermanently(String imagePath) async {
-    final directory = await getApplicationDocumentsDirectory();
-    final name = basename(imagePath);
-    final image = File('${directory.path}/$name');
-    await _cropImage(imageFile: image);
-    return File(imagePath).copy(image.path);
-  }
-
   Future<File?> _cropImage({required File imageFile}) async {
     CroppedFile? croppedImage =
-    await ImageCropper().cropImage(sourcePath: imageFile.path);
+        await ImageCropper().cropImage(sourcePath: imageFile.path);
     if (croppedImage == null) return null;
     return File(croppedImage.path);
   }
 
+// koyu renk Color(0xFF152733) - turuncu renk Color(0xFFF17D09)
   @override
   Widget build(BuildContext context) {
+    int _bottomNavIndex;
     return Scaffold(
+      floatingActionButton: FloatingActionButton(
+        backgroundColor: Color(0xFFF17D09),
+
+        onPressed: () {},
+
+        child: const Icon(
+          Icons.document_scanner_sharp,
+          color: Colors.white,
+          size: 30,
+        ),
+        //params
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: AnimatedBottomNavigationBar(
+        icons: const [Icons.home, Icons.share],
+        iconSize: 30,
+        inactiveColor: Colors.white,
+        activeIndex: 2,
+        backgroundColor: Color(0xFF152733),
+        gapLocation: GapLocation.center,
+        notchSmoothness: NotchSmoothness.verySmoothEdge,
+        leftCornerRadius: 0,
+        rightCornerRadius: 0,
+        onTap: (index) => setState(() => _bottomNavIndex = index),
+      ),
       appBar: AppBar(
-        backgroundColor: Colors.green,
+        backgroundColor: Color(0xFF152733),
         title: const Text(
-          "OK Scanner",
-          style: TextStyle(color: Colors.white),
+          "Fotoğrafları metne çevir",
+          style: TextStyle(color: Colors.white,fontSize: 16),
         ),
         actions: <Widget>[
           IconButton(
             icon: const Icon(
-              Icons.mail,
+              Icons.info_outline,
               color: Colors.white,
             ),
             onPressed: () {
-              // do something
-            },
-          ),
-          IconButton(
-            icon: const Icon(
-              Icons.settings,
-              color: Colors.white,
-            ),
-            onPressed: () {
-
               // do something
             },
           ),
@@ -116,7 +132,17 @@ class _MyHomePageState extends State<MyHomePage> {
       body: Column(
         children: <Widget>[
           const SizedBox(
-            height: 30,
+            height: 20,
+          ),
+          const Text(
+            "Önizleme",
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: Color(0xFF152733)),
+          ),
+          const SizedBox(
+            height: 10,
           ),
           _image != null
               ? Image.file(
@@ -125,9 +151,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   height: 200,
                   fit: BoxFit.cover,
                 )
-              : Image.asset('assets/images/yz_200.png'),
+              : Icon(Icons.image_search,size: 180,),
           const SizedBox(
-            height: 30,
+            height: 10,
           ),
           Center(
             child: Row(
@@ -136,7 +162,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   padding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
                   child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      primary: Colors.cyan, // background
+                      primary: Color(0xFF152733), // background
                       onPrimary: Colors.black, // foreground
                     ),
                     onPressed: () {
@@ -170,7 +196,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   padding: const EdgeInsets.all(2),
                   child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        primary: Colors.cyan, // background
+                        primary: Color(0xFF152733), // background
                         onPrimary: Colors.black, // foreground
                       ),
                       onPressed: () {
@@ -203,7 +229,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   padding: const EdgeInsets.fromLTRB(1, 0, 6, 0),
                   child: ElevatedButton(
                       style: ElevatedButton.styleFrom(
-                        primary: Colors.green, // background
+                        primary: Color(0xFFF17D09), // background
                         onPrimary: Colors.black, // foreground
                       ),
                       onPressed: () {
@@ -238,124 +264,6 @@ class _MyHomePageState extends State<MyHomePage> {
           const Divider(
             height: 30,
             color: Colors.black,
-          ),
-          Center(
-            child: Row(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
-                  child: SizedBox(
-                    width: 118,
-                    height: 90,
-                    child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        primary: Colors.cyan, // background
-                        onPrimary: Colors.black, // foreground
-                      ),
-                      onPressed: () {
-                        getImage(ImageSource.gallery);
-                      },
-                      child: Column(
-                        children: const [
-                          SizedBox(
-                            height: 10,
-                          ),
-                          Icon(
-                            Icons.document_scanner_sharp,
-                            color: Colors.white,
-                            size: 40,
-                          ),
-                          SizedBox(
-                            height: 10,
-                          ),
-                          Text(
-                            'Belgelerim',
-                            style: TextStyle(color: Colors.white),
-                          ),
-                          SizedBox(
-                            height: 10,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.all(2),
-                  child: SizedBox(
-                    width: 114,
-                    height: 90,
-                    child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          primary: Colors.cyan, // background
-                          onPrimary: Colors.black, // foreground
-                        ),
-                        onPressed: () {
-                          getImage(ImageSource.camera);
-                        },
-                        child: Column(
-                          children: const [
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Icon(
-                              Icons.share,
-                              size: 40,
-                              color: Colors.white,
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Text(
-                              'Paylaş',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                          ],
-                        )),
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(1, 0, 6, 0),
-                  child: SizedBox(
-                    width: 108,
-                    height: 90,
-                    child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          primary: Colors.cyan, // background
-                          onPrimary: Colors.black, // foreground
-                        ),
-                        onPressed: () {
-                          getImage(ImageSource.camera);
-                        },
-                        child: Column(
-                          children: const [
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Icon(
-                              Icons.info,
-                              size: 40,
-                              color: Colors.white,
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                            Text(
-                              'Info',
-                              style: TextStyle(color: Colors.white),
-                            ),
-                            SizedBox(
-                              height: 10,
-                            ),
-                          ],
-                        )),
-                  ),
-                ),
-              ],
-            ),
           ),
         ],
       ),
