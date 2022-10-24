@@ -2,12 +2,22 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 
-void main() {
+ void main() async {
+     WidgetsFlutterBinding.ensureInitialized();
+     Directory root = await getApplicationDocumentsDirectory(); // this is using path_provider
+     String directoryPath = root.path + '/onronronrr';
+     await Directory(directoryPath).create(recursive: true); // the error because of this line
+     String filePath = '$directoryPath/${DateTime.now()}.jpg';
+
+     print(filePath);
+
   runApp(const MyApp());
+
 }
 
 class MyApp extends StatefulWidget {
@@ -48,10 +58,11 @@ class _MyHomePageState extends State<MyHomePage> {
     final image = await ImagePicker().pickImage(source: source);
     if (image == null) return;
 
-    //final imageTemporary = File(image.path);
-    final imagePermanent = await saveFilePermanently(image.path);
+    File? img = File(image.path);
+    img = await _cropImage(imageFile: img);
+
     setState(() {
-      _image = imagePermanent;
+      _image = img;
     });
   }
 
@@ -59,8 +70,15 @@ class _MyHomePageState extends State<MyHomePage> {
     final directory = await getApplicationDocumentsDirectory();
     final name = basename(imagePath);
     final image = File('${directory.path}/$name');
-
+    await _cropImage(imageFile: image);
     return File(imagePath).copy(image.path);
+  }
+
+  Future<File?> _cropImage({required File imageFile}) async {
+    CroppedFile? croppedImage =
+    await ImageCropper().cropImage(sourcePath: imageFile.path);
+    if (croppedImage == null) return null;
+    return File(croppedImage.path);
   }
 
   @override
@@ -88,7 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
               color: Colors.white,
             ),
             onPressed: () {
-              
+
               // do something
             },
           ),
